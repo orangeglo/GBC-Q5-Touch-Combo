@@ -1,5 +1,7 @@
 #include <avr/sleep.h>
 
+#define PULL_SENSOR_PINS_HIGH true // change to false if leaving touch sensor ICs installed
+
 #define START_PIN 2 // interrupt pin
 #define A_PIN 0
 #define B_PIN 1
@@ -12,10 +14,7 @@ void setup() {
   pinMode(START_PIN, INPUT);
   pinMode(A_PIN, INPUT);
   pinMode(B_PIN, INPUT);
-  pinMode(PALETTE_PIN, OUTPUT);
-  digitalWrite(PALETTE_PIN, HIGH);
-  pinMode(BRIGHTNESS_PIN, OUTPUT);
-  digitalWrite(BRIGHTNESS_PIN, HIGH);
+  setSensorPinsHigh();
 
   delay(5);
 }
@@ -35,16 +34,36 @@ void loop() {
   pressedMillis = millis();
   while (!digitalRead(START_PIN)) {
     if ((millis() - pressedMillis) > 1000) {
-      digitalWrite(PALETTE_PIN, digitalRead(A_PIN));
-      digitalWrite(BRIGHTNESS_PIN, digitalRead(B_PIN));
+      if (!digitalRead(A_PIN)) {
+        setSensorPinLow(A_PIN);
+      }
+      if (!digitalRead(B_PIN)){
+        setSensorPinLow(B_PIN);
+      }
     }
     delay(5);
   }
 
-  digitalWrite(PALETTE_PIN, HIGH);
-  digitalWrite(BRIGHTNESS_PIN, HIGH);
+  setSensorPinsHigh();
 }
 
 void startPressed() {
   detachInterrupt(0);
+}
+
+void setSensorPinLow(byte pin) {
+  digitalWrite(PALETTE_PIN, LOW);
+  pinMode(PALETTE_PIN, OUTPUT);
+}
+
+void setSensorPinsHigh() {
+  if (PULL_SENSOR_PINS_HIGH) {
+    digitalWrite(PALETTE_PIN, HIGH);
+    pinMode(PALETTE_PIN, OUTPUT);
+    digitalWrite(BRIGHTNESS_PIN, HIGH);
+    pinMode(BRIGHTNESS_PIN, OUTPUT);
+  } else {
+    pinMode(PALETTE_PIN, INPUT);
+    pinMode(BRIGHTNESS_PIN, INPUT);
+  }
 }
