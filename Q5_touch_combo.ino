@@ -14,7 +14,8 @@ void setup() {
   pinMode(START_PIN, INPUT);
   pinMode(A_PIN, INPUT);
   pinMode(B_PIN, INPUT);
-  setSensorPinsHigh();
+  setSensorPinHigh(PALETTE_PIN);
+  setSensorPinHigh(BRIGHTNESS_PIN);
 
   delay(5);
 }
@@ -34,36 +35,34 @@ void loop() {
   pressedMillis = millis();
   while (!digitalRead(START_PIN)) {
     if ((millis() - pressedMillis) > 1000) {
-      if (!digitalRead(A_PIN)) {
-        setSensorPinLow(A_PIN);
-      }
-      if (!digitalRead(B_PIN)){
-        setSensorPinLow(B_PIN);
-      }
+      setSensorPinFromButtonPin(PALETTE_PIN, A_PIN);
+      setSensorPinFromButtonPin(BRIGHTNESS_PIN, B_PIN);
     }
     delay(5);
   }
 
-  setSensorPinsHigh();
+  setSensorPinHigh(PALETTE_PIN);
+  setSensorPinHigh(BRIGHTNESS_PIN);
 }
 
 void startPressed() {
   detachInterrupt(0);
 }
 
-void setSensorPinLow(byte pin) {
-  digitalWrite(PALETTE_PIN, LOW);
-  pinMode(PALETTE_PIN, OUTPUT);
+void setSensorPinFromButtonPin(byte sensorPin, byte buttonPin) {
+  if (digitalRead(buttonPin)) {
+    setSensorPinHigh(sensorPin);
+  } else {
+    digitalWrite(sensorPin, LOW);
+    pinMode(sensorPin, OUTPUT);
+  }
 }
 
-void setSensorPinsHigh() {
+void setSensorPinHigh(byte sensorPin) {
   if (PULL_SENSOR_PINS_HIGH) {
-    digitalWrite(PALETTE_PIN, HIGH);
-    pinMode(PALETTE_PIN, OUTPUT);
-    digitalWrite(BRIGHTNESS_PIN, HIGH);
-    pinMode(BRIGHTNESS_PIN, OUTPUT);
+    digitalWrite(sensorPin, HIGH);
+    pinMode(sensorPin, OUTPUT); 
   } else {
-    pinMode(PALETTE_PIN, INPUT);
-    pinMode(BRIGHTNESS_PIN, INPUT);
+    pinMode(sensorPin, INPUT); 
   }
 }
